@@ -1,360 +1,314 @@
 package GUI.employee;
 
+import javax.swing.*;
 import javax.swing.table.*;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonWriter;
-
-import Classes.Compensation;
-import Classes.EmployeeInformation;
-import Classes.GovernmentIdentification;
-import Classes.LeaveRequest;
-import UtilityClasses.JsonFileHandler;
-
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
 
-import javax.swing.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
-@SuppressWarnings("serial")
+import Classes.Compensation;
+import Classes.GovernmentIdentification;
+import UtilityClasses.JsonFileHandler;
+
 public class EmployeeLeaveRequestListPage extends JFrame {
+	// UI Design Constants
+	private static final Color BACKGROUND_COLOR = new Color(250, 250, 250);
+	private static final Color PRIMARY_COLOR = new Color(33, 150, 243);
+	private static final Color ACCENT_COLOR = new Color(0, 105, 217);
+	private static final Color TEXT_COLOR = new Color(33, 33, 33);
+	private static final Color DELETE_COLOR = new Color(244, 67, 54);
 
-	private JScrollPane jScrollPane1;
-	private JButton goBackButton;
-	private JTable jTable1;
-	private int numberOfColumns = 5;
-	private JButton addEmployeeButton;
-	private JButton deleteEmployeeButton;
-	private int selectedRow;
-	private String employeeNum;
+	// Employee Context
+	private GovernmentIdentification employeeGI;
+	private Compensation employeeComp;
 
-	// Instantiate two of the user's important information
-	GovernmentIdentification employeeGI;
-	Compensation employeeComp;
-	LeaveRequest leaveRequest;
+	// UI Components
+	private JTable leaveRequestTable;
+	private DefaultTableModel tableModel;
+	private JButton backButton;
+	private JButton refreshButton;
 
-	public EmployeeLeaveRequestListPage(GovernmentIdentification employeeGI, Compensation employeeComp)
-			throws ParseException {
+	public EmployeeLeaveRequestListPage(GovernmentIdentification employeeGI, Compensation employeeComp) {
 		this.employeeGI = employeeGI;
 		this.employeeComp = employeeComp;
-		initComponents();
-		loadEmployeeData();
+
+		initializeComponents();
+		setupFrame();
+		loadLeaveRequests();
 	}
 
-	private void initComponents() {
-
-		// Set JFrame
-		setTitle("MotorPH Payroll System | Leave Requests");
-		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-		setResizable(false);
-
-		// Instantiate Table
-		jTable1 = new JTable();
-
-		addEmployeeButton = new JButton();
-		deleteEmployeeButton = new JButton();
-
-		// Instantiate Button Component
-		goBackButton = new JButton();
-		goBackButton.setText("Go Back to Leave Request Page");
-		goBackButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				goBackButtonActionPerformed(evt);
-			}
-		});
-
-		// Create an empty default table model
-		DefaultTableModel model = new DefaultTableModel(new Object[][] {},
-				new String[] { "ID", "Employee Number", "Start Date", "End Date", "Status", "Leave Type", "" }) {
-			@Override
-			public Class<?> getColumnClass(int columnIndex) {
-				// Return the appropriate class for the last column (column with buttons)
-				return (columnIndex == getColumnCount() - 1) || (columnIndex == getColumnCount() - 2) ? JButton.class
-						: Object.class;
-			}
-
+	private void initializeComponents() {
+		// Create table model
+		String[] columnNames = {"ID", "Start Date", "End Date", "Leave Type", "Status", "Actions"};
+		tableModel = new DefaultTableModel(columnNames, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
-				// Allow editing only for the last column
 				return column == getColumnCount() - 1;
+			}
+
+			@Override
+			public Class<?> getColumnClass(int columnIndex) {
+				if (columnIndex == getColumnCount() - 1) return JButton.class;
+				return String.class;
 			}
 		};
 
-		// Modify Table Row Height
-		jTable1 = new JTable(model);
-		jTable1.setRowHeight(30);
+		// Create table
+		leaveRequestTable = new JTable(tableModel);
 
-		// Modify the width of the first column
-		TableColumn firstColumn = jTable1.getColumnModel().getColumn(0);
-		firstColumn.setMinWidth(0);
-		firstColumn.setMaxWidth(0);
-
-		// Modify the width of the second column
-		TableColumn secondColumn = jTable1.getColumnModel().getColumn(1);
-		secondColumn.setPreferredWidth(90); // Set your preferred width here
-
-		// Modify the width of the last column
-		TableColumn lastColumn = jTable1.getColumnModel().getColumn(numberOfColumns);
-		lastColumn.setPreferredWidth(50); // Set your preferred width here
-
-		// Set a custom renderer and editor for the Edit Column
-		jTable1.getColumnModel().getColumn(model.getColumnCount() - 1).setCellRenderer(new ButtonRenderer("Delete"));
-		jTable1.getColumnModel().getColumn(model.getColumnCount() - 1)
-				.setCellEditor(new ButtonEditor(1, "Delete", "DeleteDialogPane"));
-
-		// Set custom renderer for the header cells to make them bold
-		JTableHeader header = jTable1.getTableHeader();
-		header.setDefaultRenderer(new BoldHeaderRenderer(header.getDefaultRenderer()));
-
-		jScrollPane1 = new JScrollPane(jTable1);
-
-		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(layout.createSequentialGroup().addContainerGap()
-						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-								.addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 996, Short.MAX_VALUE)
-								.addGroup(layout.createSequentialGroup().addComponent(goBackButton).addPreferredGap(
-										javax.swing.LayoutStyle.ComponentPlacement.RELATED,
-										javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-						.addContainerGap(13, Short.MAX_VALUE)));
-		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(
-				javax.swing.GroupLayout.Alignment.TRAILING,
-				layout.createSequentialGroup().addContainerGap(13, Short.MAX_VALUE)
-						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-								.addComponent(goBackButton))
-						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-						.addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 428,
-								javax.swing.GroupLayout.PREFERRED_SIZE)
-						.addContainerGap()));
-
-		pack();
-
-		// Make the window appear in the middle
-		setLocationRelativeTo(null);
+		// Customize table appearance
+		customizeTable();
 	}
 
-	private void loadEmployeeData() throws ParseException {
+	private void customizeTable() {
+		// Table header styling
+		JTableHeader header = leaveRequestTable.getTableHeader();
+		header.setBackground(PRIMARY_COLOR);
+		header.setForeground(Color.WHITE);
+		header.setFont(new Font("SansSerif", Font.BOLD, 14));
+		header.setPreferredSize(new Dimension(header.getWidth(), 40));
+
+		// Row styling
+		leaveRequestTable.setRowHeight(35);
+		leaveRequestTable.setFont(new Font("SansSerif", Font.PLAIN, 13));
+		leaveRequestTable.setSelectionBackground(new Color(200, 230, 255));
+
+		// Hide ID column
+		leaveRequestTable.getColumnModel().getColumn(0).setMinWidth(0);
+		leaveRequestTable.getColumnModel().getColumn(0).setMaxWidth(0);
+
+		// Add delete button column
+		TableColumn actionColumn = leaveRequestTable.getColumnModel().getColumn(getColumnCount() - 1);
+		actionColumn.setCellRenderer(new DeleteButtonRenderer());
+		actionColumn.setCellEditor(new DeleteButtonEditor());
+	}
+
+	private void setupFrame() {
+		// Frame setup
+		setTitle("Leave Requests - " + employeeGI.getFirstName() + " " + employeeGI.getLastName());
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setSize(800, 500);
+		setLocationRelativeTo(null);
+
+		// Main panel
+		JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+		mainPanel.setBackground(BACKGROUND_COLOR);
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+		// Create header
+		JPanel headerPanel = createHeaderPanel();
+		mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+		// Add table to scrollpane
+		JScrollPane scrollPane = new JScrollPane(leaveRequestTable);
+		scrollPane.getViewport().setBackground(Color.WHITE);
+		mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+		// Set content pane
+		setContentPane(mainPanel);
+	}
+
+	private JPanel createHeaderPanel() {
+		JPanel headerPanel = new JPanel(new BorderLayout());
+		headerPanel.setBackground(BACKGROUND_COLOR);
+
+		// Title
+		JLabel titleLabel = new JLabel("Leave Requests");
+		titleLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
+		titleLabel.setForeground(PRIMARY_COLOR);
+
+		// Button panel
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		buttonPanel.setBackground(BACKGROUND_COLOR);
+
+		// Back button
+		backButton = createStyledButton("Back", ACCENT_COLOR);
+		backButton.addActionListener(e -> navigateBack());
+
+		// Refresh button
+		refreshButton = createStyledButton("Refresh", PRIMARY_COLOR);
+		refreshButton.addActionListener(e -> loadLeaveRequests());
+
+		buttonPanel.add(refreshButton);
+		buttonPanel.add(backButton);
+
+		headerPanel.add(titleLabel, BorderLayout.WEST);
+		headerPanel.add(buttonPanel, BorderLayout.EAST);
+
+		return headerPanel;
+	}
+
+	private JButton createStyledButton(String text, Color backgroundColor) {
+		JButton button = new JButton(text);
+		button.setBackground(backgroundColor);
+		button.setForeground(Color.WHITE);
+		button.setFont(new Font("SansSerif", Font.BOLD, 12));
+		button.setFocusPainted(false);
+		button.setBorderPainted(false);
+		button.setPreferredSize(new Dimension(100, 35));
+
+		button.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				button.setBackground(backgroundColor.darker());
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				button.setBackground(backgroundColor);
+			}
+		});
+
+		return button;
+	}
+
+	private void loadLeaveRequests() {
+		// Clear existing rows
+		tableModel.setRowCount(0);
+
 		try {
-			// Read the JSON file and parse it using GSON
-			FileReader reader = new FileReader(JsonFileHandler.getLeaveRequestJsonPath());
-			JsonElement jsonElement = JsonParser.parseReader(reader);
+			// Fetch leave requests
+			JsonArray leaveRequests = JsonFileHandler.getLeaveRequestJSON();
 
-			// Check if the parsed JSON is an array
-			if (!jsonElement.isJsonArray()) {
-				return;
-			}
+			// Iterate and filter employee's leave requests
+			for (int i = 0; i < leaveRequests.size(); i++) {
+				JsonObject request = leaveRequests.get(i).getAsJsonObject();
 
-			JsonArray jsonArray = jsonElement.getAsJsonArray();
+				// Check if request belongs to current employee
+				if (request.get("employeeNum").getAsString().equals(employeeGI.getEmployeeNumber())) {
+					String id = request.get("id").getAsString();
+					String startDate = formatDate(request.get("startDate").getAsString());
+					String endDate = formatDate(request.get("endDate").getAsString());
+					String leaveType = request.get("leaveType").getAsString();
+					String status = request.get("approved").getAsString();
 
-			// Check if the JSON array is empty
-			if (jsonArray.size() == 0) {
-				// Handle the case when the array is empty by creating an empty JSON array
-				jsonArray = new JsonArray();
-			}
-
-			// Iterate through the JSON array and add data to the table model
-			DefaultTableModel model = (DefaultTableModel) ((JTable) jScrollPane1.getViewport().getView()).getModel();
-			Gson gson = new Gson();
-
-			// Auto increment employeeNum for record creation
-			employeeNum = String.valueOf(jsonArray.size() > 0
-					? jsonArray.get(jsonArray.size() - 1).getAsJsonObject().get("employeeNum").getAsInt() + 1
-					: 1);
-
-			// Loop through the JSON array
-			for (int i = 0; i < jsonArray.size(); i++) {
-				JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
-				LeaveRequest leaveRequests = gson.fromJson(jsonObject, LeaveRequest.class);
-
-				// Only show records that belong to this employee
-				if (jsonObject.get("employeeNum").getAsString().equals(employeeGI.getEmployeeNumber())) {
-
-					// Format the start date so it doesn't show the time
-					String formattedStartDate = new SimpleDateFormat("EEE MMM dd, yyyy").format(
-							new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(leaveRequests.getStartDate()));
-
-					String formattedEndDate = new SimpleDateFormat("EEE MMM dd, yyyy").format(
-							new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(leaveRequests.getEndDate()));
-
-					// Add the data to the table model
-					model.addRow(new Object[] { leaveRequests.getId(), leaveRequests.getEmployeeNum(),
-							formattedStartDate, formattedEndDate, leaveRequests.isApproved(),
-							leaveRequests.getLeaveType(), "View", "View" });
+					tableModel.addRow(new Object[]{
+							id, startDate, endDate, leaveType, status, "Delete"
+					});
 				}
-
 			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this,
+					"Error loading leave requests: " + e.getMessage(),
+					"Error",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
-	// Click event of Go Back to leave request page Button
-	private void goBackButtonActionPerformed(java.awt.event.ActionEvent evt) {
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				// Remove the leave request list Window
-				dispose();
-
-				// Go back to the leave request page
-				new LeaveRequestPage(employeeGI, employeeComp).setVisible(true);
-			}
-		});
+	private String formatDate(String dateString) {
+		try {
+			return new SimpleDateFormat("MMM dd, yyyy").format(
+					new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(dateString)
+			);
+		} catch (ParseException e) {
+			return dateString;
+		}
 	}
 
-	private void deleteLeaveEntry(String value) throws IOException {
-		JsonArray jsonArray = JsonFileHandler.getLeaveRequestJSON();
-
-		// Instantiate gson class
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-		// Remove the object
-		JsonFileHandler.removeJsonObject(jsonArray, "id", value);
-
-		// Write the modified JsonArray back to the JSON file
-		JsonFileHandler.writeJsonFile(gson.toJson(jsonArray), JsonFileHandler.getLeaveRequestJsonPath());
+	private void navigateBack() {
+		dispose();
+		new LeaveRequestPage(employeeGI, employeeComp).setVisible(true);
 	}
 
-	// Custom on-render look for the button column
-	private class ButtonRenderer extends JButton implements TableCellRenderer {
-		private String buttonLabel;
-
-		public ButtonRenderer(String buttonLabel) {
-			this.buttonLabel = buttonLabel;
+	// Custom button renderer
+	private class DeleteButtonRenderer extends JButton implements TableCellRenderer {
+		public DeleteButtonRenderer() {
 			setOpaque(true);
+			setText("Delete");
+			setBackground(DELETE_COLOR);
+			setForeground(Color.WHITE);
+			setFont(new Font("SansSerif", Font.BOLD, 12));
 		}
 
 		@Override
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-				int row, int column) {
-			setText(buttonLabel);
+		public Component getTableCellRendererComponent(JTable table, Object value,
+													   boolean isSelected, boolean hasFocus, int row, int column) {
 			return this;
 		}
 	}
 
-	// Custom click-event look for the button column
-	private class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
-		private JButton button;
-		private int targetColumn;
-		private String buttonLabel;
+	// Custom button editor
+	private class DeleteButtonEditor extends AbstractCellEditor implements TableCellEditor {
+		private JButton deleteButton;
+		private int selectedRow;
 
-		public ButtonEditor(int targetColumn, String buttonLabel, String page) {
-			this.targetColumn = targetColumn;
-			this.buttonLabel = buttonLabel;
-			button = new JButton(this.buttonLabel);
-			button.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					java.awt.EventQueue.invokeLater(new Runnable() {
-						public void run() {
-							if (!page.equals("DeleteDialogPane"))
-								dispose();
+		public DeleteButtonEditor() {
+			deleteButton = new JButton("Delete");
+			deleteButton.setBackground(DELETE_COLOR);
+			deleteButton.setForeground(Color.WHITE);
+			deleteButton.setFont(new Font("SansSerif", Font.BOLD, 12));
 
-							// Check what page to go to
-							switch (page) {
-							case "DeleteDialogPane":
-								// Display a confirmation dialog
-								int result = JOptionPane.showConfirmDialog(null, "Do you want to proceed?",
-										"Confirmation", JOptionPane.YES_NO_OPTION);
+			deleteButton.addActionListener(e -> {
+				// Confirm deletion
+				int confirm = JOptionPane.showConfirmDialog(
+						null,
+						"Are you sure you want to delete this leave request?",
+						"Confirm Deletion",
+						JOptionPane.YES_NO_OPTION
+				);
 
-								// Check the user's choice
-								if (result == JOptionPane.YES_OPTION) {
-									try {
-										performDeleteOperation(targetColumn);
-										dispose();
-										navigateToLeaveRequestListPage();
-									} catch (IOException | ParseException e) {
-										e.printStackTrace();
-										// Handle or log the exception as needed
-									}
-								}
-								break;
-							default:
-								break;
-							}
+				if (confirm == JOptionPane.YES_OPTION) {
+					try {
+						// Get request ID to delete
+						String requestId = tableModel.getValueAt(selectedRow, 0).toString();
+						deleteLeaveRequest(requestId);
 
-						}
-					});
+						// Remove row from table
+						tableModel.removeRow(selectedRow);
+					} catch (Exception ex) {
+						JOptionPane.showMessageDialog(
+								null,
+								"Error deleting leave request: " + ex.getMessage(),
+								"Error",
+								JOptionPane.ERROR_MESSAGE
+						);
+					}
 				}
+
+				fireEditingStopped();
 			});
 		}
 
 		@Override
-		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
-				int column) {
-
-			// Call constructor
-			employeeGI = new GovernmentIdentification(jTable1.getValueAt(row, targetColumn).toString());
-			employeeComp = new Compensation(jTable1.getValueAt(row, targetColumn).toString());
-			leaveRequest = new LeaveRequest(jTable1.getValueAt(row, targetColumn).toString());
-
+		public Component getTableCellEditorComponent(JTable table, Object value,
+													 boolean isSelected, int row, int column) {
 			selectedRow = row;
-
-			// Set all the important information to be passed
-			try {
-				EmployeeInformation.setEmployeeInformationObject(jTable1.getValueAt(row, targetColumn).toString(),
-						employeeGI, employeeComp);
-				LeaveRequest.setLeaveRequestInformationObject(jTable1.getValueAt(row, targetColumn - 1).toString(),
-						leaveRequest);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			return button;
+			return deleteButton;
 		}
 
 		@Override
 		public Object getCellEditorValue() {
-			return "View";
+			return "Delete";
 		}
 	}
 
-	// Make the column headers bold
-	private static class BoldHeaderRenderer implements TableCellRenderer {
+	private void deleteLeaveRequest(String requestId) throws IOException {
+		// Get current leave requests
+		JsonArray leaveRequests = JsonFileHandler.getLeaveRequestJSON();
 
-		private final TableCellRenderer defaultRenderer;
-
-		public BoldHeaderRenderer(TableCellRenderer defaultRenderer) {
-			this.defaultRenderer = defaultRenderer;
-		}
-
-		@Override
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-				int row, int column) {
-			Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
-					column);
-
-			if (c instanceof JLabel) {
-				JLabel label = (JLabel) c;
-				Font font = label.getFont();
-				label.setFont(font.deriveFont(font.getStyle() | Font.BOLD));
+		// Remove matching request
+		for (int i = 0; i < leaveRequests.size(); i++) {
+			JsonObject request = leaveRequests.get(i).getAsJsonObject();
+			if (request.get("id").getAsString().equals(requestId)) {
+				leaveRequests.remove(i);
+				break;
 			}
-
-			return c;
 		}
+
+		// Write updated requests back to file
+		JsonFileHandler.writeJsonFile(
+				new Gson().toJson(leaveRequests),
+				JsonFileHandler.getLeaveRequestJsonPath()
+		);
 	}
 
-	private void performDeleteOperation(int targetColumn) throws IOException {
-		deleteLeaveEntry(jTable1.getValueAt(selectedRow, targetColumn - 1).toString());
-	}
-
-	private void navigateToLeaveRequestListPage() throws ParseException {
-		new EmployeeLeaveRequestListPage(employeeGI, employeeComp).setVisible(true);
+	private int getColumnCount() {
+		return tableModel.getColumnCount();
 	}
 }

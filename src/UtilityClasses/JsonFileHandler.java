@@ -15,10 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -192,6 +189,30 @@ public class JsonFileHandler {
 		}
 	}
 
+	public static void addLeaveRequest(LeaveRequest leaveRequest) {
+		try {
+			// Read existing leave requests
+			List<LeaveRequest> existingLeaveRequests = readLeaveRequestsFromFile(getLeaveRequestJsonPath());
+
+			// Set a unique ID if not already set
+			if (leaveRequest.getId() == null || leaveRequest.getId().isEmpty()) {
+				leaveRequest.setId(UUID.randomUUID().toString());
+			}
+
+			// Add new leave request
+			existingLeaveRequests.add(leaveRequest);
+
+			// Write updated list back to file
+			Gson gson = new Gson();
+			String jsonContent = gson.toJson(existingLeaveRequests);
+
+			// Write to file
+			Files.writeString(Paths.get(getLeaveRequestJsonPath()), jsonContent);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void removeJsonObject(JsonArray jsonArray, String key, String value) {
 		Iterator<JsonElement> iterator = jsonArray.iterator();
 		while (iterator.hasNext()) {
@@ -205,4 +226,6 @@ public class JsonFileHandler {
 			}
 		}
 	}
+
+
 }
