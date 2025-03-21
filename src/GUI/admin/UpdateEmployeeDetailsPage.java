@@ -13,6 +13,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 import javax.swing.*;
@@ -111,7 +112,9 @@ public class UpdateEmployeeDetailsPage extends JFrame {
 	// Employee data objects
 	private GovernmentIdentification employeeGI;
 	private Compensation employeeComp;
-
+	private DecimalFormat decimalFormatter = new DecimalFormat();
+	
+	
 	public UpdateEmployeeDetailsPage(GovernmentIdentification employeeGI, Compensation employeeComp) {
 		this.employeeGI = employeeGI;
 		this.employeeComp = employeeComp;

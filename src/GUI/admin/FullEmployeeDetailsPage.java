@@ -311,10 +311,10 @@ public class FullEmployeeDetailsPage extends JFrame {
 		sssValue = createValueLabel(employeeGI.getSSSNumber(), col1X + valueOffset, row1Y);
 
 		philhealthLabel = createLabel("PhilHealth:", col2X, row1Y);
-		philhealthValue = createValueLabel(formatIDNumber(employeeGI.getPhilHealthNumber()), col2X + valueOffset, row1Y);
+		philhealthValue = createValueLabel(employeeGI.getPhilHealthNumber(), col2X + valueOffset, row1Y);
 
 		pagibigLabel = createLabel("Pag-IBIG:", col1X, row2Y);
-		pagibigValue = createValueLabel(formatIDNumber(employeeGI.getPagibigNumber()), col1X + valueOffset, row2Y);
+		pagibigValue = createValueLabel(employeeGI.getPagibigNumber(), col1X + valueOffset, row2Y);
 
 		tinLabel = createLabel("TIN Number:", col2X, row2Y);
 		tinValue = createValueLabel(employeeGI.getTinNumber(), col2X + valueOffset, row2Y);
@@ -521,12 +521,13 @@ public class FullEmployeeDetailsPage extends JFrame {
 
 		// Update the hours rendered display with formatted value
 		hoursRenderedValue.setText(hourFormatter.format(hoursRenderedNum.get()));
-
+		
+		
+		
 		// Calculate gross salary based on hours and hourly rate
 		double hourlyRate = employeeComp.getHourlyRate();
 		double hours = hoursRenderedNum.get();
 		double grossSalary = hourlyRate * hours;
-
 		// Calculate deductions
 		double sssDeduction = SalaryCalculator.getSSS(grossSalary);
 		double philhealthDeduction = SalaryCalculator.getPhilHealth(grossSalary);
@@ -546,9 +547,9 @@ public class FullEmployeeDetailsPage extends JFrame {
 		double netSalary = salaryAfterTax + totalAllowance;
 
 		// Update UI with formatted monetary values
-		grossSalaryValue.setText(currencyFormatter.format(grossSalary));
-		totalDeductionsValue.setText(currencyFormatter.format(totalDeductions + withholdingTax));
-		netSalaryValue.setText(currencyFormatter.format(netSalary));
+		grossSalaryValue.setText(decimalFormatter.format(grossSalary));
+		totalDeductionsValue.setText(decimalFormatter.format(totalDeductions + withholdingTax));
+		netSalaryValue.setText(decimalFormatter.format(netSalary));
 
 		// Make the salary panel visible
 		if (!salaryPanel.isVisible()) {
