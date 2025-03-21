@@ -194,7 +194,7 @@ public class EmployeeLeaveRequestListPage extends JFrame {
 					// Add the data to the table model
 					model.addRow(new Object[] { leaveRequests.getId(), leaveRequests.getEmployeeNum(),
 							formattedStartDate, formattedEndDate, leaveRequests.isApproved(),
-							leaveRequests.getLeave_type(), "View", "View" });
+							leaveRequests.getLeaveType(), "View", "View" });
 				}
 
 			}

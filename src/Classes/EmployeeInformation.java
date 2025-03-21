@@ -1,15 +1,12 @@
 package Classes;
 
 import java.io.IOException;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
-
 import UtilityClasses.JsonFileHandler;
 
 public class EmployeeInformation extends User {
-
 	@SerializedName("last_name")
 	private String lastName;
 
@@ -42,28 +39,20 @@ public class EmployeeInformation extends User {
 		super(employeeNumber);
 	}
 
-	public void setHourlyRate(double value) {
-		this.hourlyRate = value;
-	}
-
-	public double getHourlyRate() {
-		return hourlyRate;
+	public String getLastName() {
+		return lastName;
 	}
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
 
-	public String getLastName() {
-		return lastName;
+	public String getFirstName() {
+		return firstName;
 	}
 
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
-	}
-
-	public String getFirstName() {
-		return firstName;
 	}
 
 	public String getBirthday() {
@@ -106,6 +95,14 @@ public class EmployeeInformation extends User {
 		this.immediateSupervisor = immediateSupervisor;
 	}
 
+	public double getHourlyRate() {
+		return hourlyRate;
+	}
+
+	public void setHourlyRate(double hourlyRate) {
+		this.hourlyRate = hourlyRate;
+	}
+
 	public String getStatus() {
 		return status;
 	}
@@ -114,19 +111,12 @@ public class EmployeeInformation extends User {
 		this.status = status;
 	}
 
-	public static void setEmployeeInformationObject(String employeeNumber, GovernmentIdentification employeeGI,
-			Compensation employeeComp) throws IOException {
-
-		// Iterate through the JSON file for the employee data
-		JsonObject employeeData = JsonFileHandler.nameIterator(JsonFileHandler.getEmployeesJSON(), "employeeNum",
-				employeeNumber);
-
-		// Instantiate Gson to get their Json counterparts
+	public static void setEmployeeInformationObject(String employeeNumber, GovernmentIdentification employeeGI, Compensation employeeComp) throws IOException {
+		JsonObject employeeData = JsonFileHandler.nameIterator(JsonFileHandler.getEmployeesJSON(), "employeeNum", employeeNumber);
 		Gson gson = new Gson();
 		GovernmentIdentification employeeGovInfo = gson.fromJson(employeeData, GovernmentIdentification.class);
 		Compensation employeeCompInfo = gson.fromJson(employeeData, Compensation.class);
 
-		// Set the employee's identity information
 		employeeGI.setLastName(employeeGovInfo.getLastName());
 		employeeGI.setFirstName(employeeGovInfo.getFirstName());
 		employeeGI.setBirthday(employeeGovInfo.getBirthday());
@@ -136,13 +126,11 @@ public class EmployeeInformation extends User {
 		employeeGI.setStatus(employeeGovInfo.getStatus());
 		employeeGI.setPosition(employeeGovInfo.getPosition());
 
-		// Set Government Identification data of Employee
 		employeeGI.setSSSNumber(employeeGovInfo.getSSSNumber());
 		employeeGI.setPhilHealthNumber(employeeGovInfo.getPhilHealthNumber());
 		employeeGI.setPagibigNumber(employeeGovInfo.getPagibigNumber());
 		employeeGI.setTinNumber(employeeGovInfo.getTinNumber());
 
-		// Set Compensation data of Employee
 		employeeComp.setBasicSalary(employeeCompInfo.getBasicSalary());
 		employeeComp.setClothingAllowance(employeeCompInfo.getClothingAllowance());
 		employeeComp.setGrossSemiMonthlyRate(employeeCompInfo.getGrossSemiMonthlyRate());

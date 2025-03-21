@@ -2,26 +2,24 @@ package Classes;
 
 import java.io.IOException;
 import java.util.UUID;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
 import UtilityClasses.JsonFileHandler;
 
 public class LeaveRequest {
 	private String id;
 	private String employeeNum;
-	private String first_name;
-	private String last_name;
+	private String firstName;
+	private String lastName;
 	private String startDate;
 	private String endDate;
 	private String notes;
-	private String leave_type;
+	private String leaveType;
 	private String approved = "Not Approved Yet.";
 
 	public LeaveRequest(String employeeNum) {
-		this.setEmployeeNum(employeeNum);
-		this.setId(UUID.randomUUID().toString());
+		this.employeeNum = employeeNum;
+		this.id = UUID.randomUUID().toString();
 	}
 
 	public String getStartDate() {
@@ -48,12 +46,12 @@ public class LeaveRequest {
 		this.notes = notes;
 	}
 
-	public String getLeave_type() {
-		return leave_type;
+	public String getLeaveType() {
+		return leaveType;
 	}
 
-	public void setLeave_type(String leave_type) {
-		this.leave_type = leave_type;
+	public void setLeaveType(String leaveType) {
+		this.leaveType = leaveType;
 	}
 
 	public String isApproved() {
@@ -72,38 +70,33 @@ public class LeaveRequest {
 		this.employeeNum = employeeNum;
 	}
 
-	public String getFirst_name() {
-		return first_name;
+	public String getFirstName() {
+		return firstName;
 	}
 
-	public void setFirst_name(String first_name) {
-		this.first_name = first_name;
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
 	}
 
-	public String getLast_name() {
-		return last_name;
+	public String getLastName() {
+		return lastName;
 	}
 
-	public void setLast_name(String last_name) {
-		this.last_name = last_name;
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 	public static void setLeaveRequestInformationObject(String value, LeaveRequest leaveRequest) throws IOException {
-
-		// Iterate through the JSON file for the employee data
 		JsonObject employeeData = JsonFileHandler.nameIterator(JsonFileHandler.getLeaveRequestJSON(), "id", value);
-
-		// Instantiate Gson to get their Json counterparts
 		Gson gson = new Gson();
 		LeaveRequest leaveRequestInfo = gson.fromJson(employeeData, LeaveRequest.class);
 
-		// Set the employee's identity information
 		leaveRequest.setEmployeeNum(leaveRequestInfo.getEmployeeNum());
-		leaveRequest.setLast_name(leaveRequestInfo.getLast_name());
-		leaveRequest.setFirst_name(leaveRequestInfo.getFirst_name());
+		leaveRequest.setLastName(leaveRequestInfo.getLastName());
+		leaveRequest.setFirstName(leaveRequestInfo.getFirstName());
 		leaveRequest.setEndDate(leaveRequestInfo.getEndDate());
 		leaveRequest.setStartDate(leaveRequestInfo.getStartDate());
-		leaveRequest.setLeave_type(leaveRequestInfo.getLeave_type());
+		leaveRequest.setLeaveType(leaveRequestInfo.getLeaveType());
 		leaveRequest.setNotes(leaveRequestInfo.getNotes());
 		leaveRequest.setApproved(leaveRequestInfo.isApproved());
 	}

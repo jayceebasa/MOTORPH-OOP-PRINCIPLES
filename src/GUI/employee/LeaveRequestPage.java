@@ -244,17 +244,16 @@ public class LeaveRequestPage extends JFrame {
 		LeaveRequest leaveRequest = new LeaveRequest(employeeGI.getEmployeeNumber());
 
 		// Add the data to the json file
-		leaveRequest.setLast_name(employeeGI.getLastName());
-		leaveRequest.setFirst_name(employeeGI.getFirstName());
+		leaveRequest.setLastName(employeeGI.getLastName());
+		leaveRequest.setFirstName(employeeGI.getFirstName());
 		leaveRequest.setStartDate(startDateField.getDate().toString());
 		leaveRequest.setEndDate(endDateField.getDate().toString());
 		leaveRequest.setNotes(notesField.getText());
-		leaveRequest.setLeave_type(typeOfLeaveDropdown.getSelectedItem().toString());
+		leaveRequest.setLeaveType(typeOfLeaveDropdown.getSelectedItem().toString());
 		leaveRequest.setApproved("Not Approved Yet");
 
 		// Read existing LeaveRequest objects from the file
-		List<LeaveRequest> existingLeaveRequests = JsonFileHandler
-				.readLeaveRequestsFromFile(JsonFileHandler.getLeaveRequestJsonPath());
+		List<LeaveRequest> existingLeaveRequests = JsonFileHandler.readLeaveRequestsFromFile(JsonFileHandler.getLeaveRequestJsonPath());
 
 		// Add the new LeaveRequest object to the list
 		existingLeaveRequests.add(leaveRequest);

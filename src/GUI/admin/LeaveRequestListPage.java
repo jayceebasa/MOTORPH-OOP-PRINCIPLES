@@ -18,10 +18,15 @@ import Classes.LeaveRequest;
 import GUI.employee.EmployeeLeaveRequestListPage;
 import UtilityClasses.JsonFileHandler;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,9 +35,24 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 @SuppressWarnings("serial")
 public class LeaveRequestListPage extends JFrame {
+
+	// Design Constants
+	private static final Color PRIMARY_COLOR = new Color(25, 118, 210);  // Material blue
+	private static final Color ACCENT_COLOR = new Color(230, 230, 230);  // Light gray
+	private static final Color BACKGROUND_COLOR = new Color(250, 250, 250);  // Nearly white
+	private static final Color TEXT_COLOR = new Color(33, 33, 33);  // Dark gray for text
+	private static final Color BUTTON_TEXT_COLOR = Color.WHITE;
+	private static final Color SUCCESS_COLOR = new Color(76, 175, 80);  // Green
+	private static final Color ERROR_COLOR = new Color(211, 47, 47);  // Red
+
+	private static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 24);
+	private static final Font HEADER_FONT = new Font("Segoe UI", Font.BOLD, 14);
+	private static final Font BODY_FONT = new Font("Segoe UI", Font.PLAIN, 14);
+	private static final Font BUTTON_FONT = new Font("Segoe UI", Font.BOLD, 14);
 
 	private JScrollPane jScrollPane1;
 	private JButton goBackButton;
@@ -42,6 +62,7 @@ public class LeaveRequestListPage extends JFrame {
 	private JButton deleteEmployeeButton;
 	private int selectedRow;
 	private String employeeNum;
+	private JLabel titleLabel;
 
 	// Instantiate two of the user's important information
 	GovernmentIdentification employeeGI;
@@ -61,16 +82,19 @@ public class LeaveRequestListPage extends JFrame {
 		setTitle("MotorPH Payroll System | Leave Requests");
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		setResizable(false);
+		getContentPane().setBackground(BACKGROUND_COLOR);
+
+		// Create title label
+		titleLabel = new JLabel("Leave Requests");
+		titleLabel.setFont(TITLE_FONT);
+		titleLabel.setForeground(PRIMARY_COLOR);
 
 		// Instantiate Table
 		jTable1 = new JTable();
 
-		addEmployeeButton = new JButton();
-		deleteEmployeeButton = new JButton();
-
-		// Instantiate Button Component
+		// Instantiate Go Back Button
 		goBackButton = new JButton();
-		goBackButton.setText("Go Back to Dashboard");
+		styleButton(goBackButton, "Go Back to Dashboard", PRIMARY_COLOR);
 		goBackButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				goBackButtonActionPerformed(evt);
@@ -96,7 +120,13 @@ public class LeaveRequestListPage extends JFrame {
 
 		// Modify Table Row Height
 		jTable1 = new JTable(model);
-		jTable1.setRowHeight(30);
+		jTable1.setRowHeight(40);
+		jTable1.setFont(BODY_FONT);
+		jTable1.setGridColor(ACCENT_COLOR);
+		jTable1.setShowGrid(true);
+		jTable1.setSelectionBackground(new Color(232, 240, 254)); // Light blue highlight
+		jTable1.setSelectionForeground(TEXT_COLOR);
+		jTable1.setBorder(BorderFactory.createEmptyBorder());
 
 		// Modify the width of the first column
 		TableColumn firstColumn = jTable1.getColumnModel().getColumn(0);
@@ -109,34 +139,42 @@ public class LeaveRequestListPage extends JFrame {
 
 		// Modify the width of the last column
 		TableColumn lastColumn = jTable1.getColumnModel().getColumn(numberOfColumns);
-		lastColumn.setPreferredWidth(50); // Set your preferred width here
+		lastColumn.setPreferredWidth(70); // Set your preferred width here
 
 		// Modify the width of the last column
 		TableColumn deleteColumn = jTable1.getColumnModel().getColumn(numberOfColumns - 1);
-		deleteColumn.setPreferredWidth(100); // Set your preferred width here
+		deleteColumn.setPreferredWidth(70); // Set your preferred width here
 
-		// Set a custom renderer and editor for the Edit Column
-		jTable1.getColumnModel().getColumn(model.getColumnCount() - 1).setCellRenderer(new ButtonRenderer("Delete"));
+		// Set a custom renderer and editor for the Delete button column
 		jTable1.getColumnModel().getColumn(model.getColumnCount() - 1)
-				.setCellEditor(new ButtonEditor(1, "Delete", "DeleteDialogPane"));
+				.setCellRenderer(new ButtonRenderer("Delete", ERROR_COLOR));
+		jTable1.getColumnModel().getColumn(model.getColumnCount() - 1)
+				.setCellEditor(new ButtonEditor(1, "Delete", "DeleteDialogPane", ERROR_COLOR));
 
-		// Set a custom renderer and editor for the View Employee column
+		// Set a custom renderer and editor for the View Request column
 		jTable1.getColumnModel().getColumn(model.getColumnCount() - 2)
-				.setCellRenderer(new ButtonRenderer("View Request"));
+				.setCellRenderer(new ButtonRenderer("View", PRIMARY_COLOR));
 		jTable1.getColumnModel().getColumn(model.getColumnCount() - 2)
-				.setCellEditor(new ButtonEditor(1, "View Request", "LeaveRequestDetailsPage"));
+				.setCellEditor(new ButtonEditor(1, "View", "LeaveRequestDetailsPage", PRIMARY_COLOR));
 
 		// Set custom renderer for the header cells to make them bold
 		JTableHeader header = jTable1.getTableHeader();
-		header.setDefaultRenderer(new BoldHeaderRenderer(header.getDefaultRenderer()));
+		header.setBackground(ACCENT_COLOR);
+		header.setForeground(TEXT_COLOR);
+		header.setFont(HEADER_FONT);
+		header.setPreferredSize(new Dimension(header.getPreferredSize().width, 40));
+		header.setBorder(BorderFactory.createEmptyBorder());
 
 		jScrollPane1 = new JScrollPane(jTable1);
+		jScrollPane1.setBorder(BorderFactory.createLineBorder(ACCENT_COLOR));
+		jScrollPane1.getViewport().setBackground(Color.WHITE);
 
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup().addContainerGap()
 						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+								.addComponent(titleLabel)
 								.addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 996, Short.MAX_VALUE)
 								.addGroup(layout.createSequentialGroup().addComponent(goBackButton).addPreferredGap(
 										javax.swing.LayoutStyle.ComponentPlacement.RELATED,
@@ -145,6 +183,8 @@ public class LeaveRequestListPage extends JFrame {
 		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(
 				javax.swing.GroupLayout.Alignment.TRAILING,
 				layout.createSequentialGroup().addContainerGap(13, Short.MAX_VALUE)
+						.addComponent(titleLabel)
+						.addGap(15, 15, 15)
 						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
 								.addComponent(goBackButton))
 						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -156,6 +196,32 @@ public class LeaveRequestListPage extends JFrame {
 
 		// Make the window appear in the middle
 		setLocationRelativeTo(null);
+	}
+
+	// Helper method to style buttons consistently
+	private void styleButton(JButton button, String text, Color bgColor) {
+		button.setText(text);
+		button.setFont(BUTTON_FONT);
+		button.setBackground(bgColor);
+		button.setForeground(BUTTON_TEXT_COLOR);
+		button.setFocusPainted(false);
+		button.setBorderPainted(false);
+		button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		button.setPreferredSize(new Dimension(180, 40));
+
+		// Add hover effect
+		final Color originalColor = bgColor;
+		button.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				button.setBackground(originalColor.darker());
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				button.setBackground(originalColor);
+			}
+		});
 	}
 
 	private void loadEmployeeData() throws ParseException {
@@ -189,19 +255,84 @@ public class LeaveRequestListPage extends JFrame {
 			// Loop through the JSON array
 			for (int i = 0; i < jsonArray.size(); i++) {
 				JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
-				LeaveRequest leaveRequests = gson.fromJson(jsonObject, LeaveRequest.class);
 
-				// Format the start date so it doesn't show the time
-				String formattedStartDate = new SimpleDateFormat("EEE MMM dd, yyyy").format(
-						new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(leaveRequests.getStartDate()));
+				// Directly access the JSON object properties to ensure we get all data
+				String id = jsonObject.has("id") ? jsonObject.get("id").getAsString() : "";
+				String empNum = jsonObject.has("employeeNum") ? jsonObject.get("employeeNum").getAsString() : "";
+				String lastName = jsonObject.has("lastName") ? jsonObject.get("lastName").getAsString() : "";
+				String firstName = jsonObject.has("firstName") ? jsonObject.get("firstName").getAsString() : "";
+				String startDate = jsonObject.has("startDate") ? jsonObject.get("startDate").getAsString() : "";
+				String endDate = jsonObject.has("endDate") ? jsonObject.get("endDate").getAsString() : "";
+				String status = jsonObject.has("approved") ? jsonObject.get("approved").getAsString() : "Pending";
+				String leaveType = "";
 
-				String formattedEndDate = new SimpleDateFormat("EEE MMM dd, yyyy")
-						.format(new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(leaveRequests.getEndDate()));
+				// Handle leave_type which may be stored differently
+				if (jsonObject.has("leave_type")) {
+					leaveType = jsonObject.get("leave_type").getAsString();
+				} else if (jsonObject.has("leaveType")) {
+					leaveType = jsonObject.get("leaveType").getAsString();
+				}
+
+				// If lastName or firstName is null, try to get them from employees.json
+				if (lastName == null || lastName.isEmpty() || firstName == null || firstName.isEmpty()) {
+					try {
+						JsonArray employeesArray = JsonFileHandler.getEmployeesJSON();
+						for (JsonElement empElement : employeesArray) {
+							JsonObject empObj = empElement.getAsJsonObject();
+							if (empObj.get("employeeNum").getAsString().equals(empNum)) {
+								if ((lastName == null || lastName.isEmpty()) && empObj.has("last_name")) {
+									lastName = empObj.get("last_name").getAsString();
+								}
+								if ((firstName == null || firstName.isEmpty()) && empObj.has("first_name")) {
+									firstName = empObj.get("first_name").getAsString();
+								}
+								break;
+							}
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				// Format dates
+				String formattedStartDate = "";
+				String formattedEndDate = "";
+				try {
+					formattedStartDate = new SimpleDateFormat("EEE MMM dd, yyyy").format(
+							new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(startDate));
+
+					formattedEndDate = new SimpleDateFormat("EEE MMM dd, yyyy").format(
+							new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(endDate));
+				} catch (Exception e) {
+					// If date parsing fails, use the original values
+					formattedStartDate = startDate;
+					formattedEndDate = endDate;
+				}
 
 				// Add the data to the table model
-				model.addRow(new Object[] { leaveRequests.getId(), leaveRequests.getEmployeeNum(),
-						leaveRequests.getLast_name(), leaveRequests.getFirst_name(), formattedStartDate,
-						formattedEndDate, leaveRequests.isApproved(), leaveRequests.getLeave_type(), "View", "View" });
+				model.addRow(new Object[] {
+						id,
+						empNum,
+						lastName != null ? lastName : "N/A",
+						firstName != null ? firstName : "N/A",
+						formattedStartDate,
+						formattedEndDate,
+						status,
+						leaveType != null && !leaveType.isEmpty() ? leaveType : "N/A",
+						"View",
+						"Delete"
+				});
+
+				// Also create a LeaveRequest object for later use when viewing details
+				LeaveRequest leaveRequest = new LeaveRequest(empNum);
+				leaveRequest.setId(id);
+				leaveRequest.setLastName(lastName);
+				leaveRequest.setFirstName(firstName);
+				leaveRequest.setStartDate(startDate);
+				leaveRequest.setEndDate(endDate);
+				leaveRequest.setApproved(status);
+				leaveRequest.setLeaveType(leaveType);
+				// Store in a map or collection if needed for faster access when viewing details
 			}
 
 		} catch (IOException e) {
@@ -238,15 +369,22 @@ public class LeaveRequestListPage extends JFrame {
 	// Custom on-render look for the button column
 	private class ButtonRenderer extends JButton implements TableCellRenderer {
 		private String buttonLabel;
+		private Color buttonColor;
 
-		public ButtonRenderer(String buttonLabel) {
+		public ButtonRenderer(String buttonLabel, Color buttonColor) {
 			this.buttonLabel = buttonLabel;
+			this.buttonColor = buttonColor;
 			setOpaque(true);
+			setBackground(buttonColor);
+			setForeground(BUTTON_TEXT_COLOR);
+			setFont(new Font("Segoe UI", Font.BOLD, 12));
+			setBorderPainted(false);
+			setFocusPainted(false);
 		}
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-				int row, int column) {
+													   int row, int column) {
 			setText(buttonLabel);
 			return this;
 		}
@@ -257,11 +395,35 @@ public class LeaveRequestListPage extends JFrame {
 		private JButton button;
 		private int targetColumn;
 		private String buttonLabel;
+		private String page;
+		private Color buttonColor;
 
-		public ButtonEditor(int targetColumn, String buttonLabel, String page) {
+		public ButtonEditor(int targetColumn, String buttonLabel, String page, Color buttonColor) {
 			this.targetColumn = targetColumn;
 			this.buttonLabel = buttonLabel;
+			this.page = page;
+			this.buttonColor = buttonColor;
+
 			button = new JButton(this.buttonLabel);
+			button.setBackground(buttonColor);
+			button.setForeground(BUTTON_TEXT_COLOR);
+			button.setFont(new Font("Segoe UI", Font.BOLD, 12));
+			button.setBorderPainted(false);
+			button.setFocusPainted(false);
+
+			// Add hover effect
+			button.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					button.setBackground(buttonColor.darker());
+				}
+
+				@Override
+				public void mouseExited(MouseEvent e) {
+					button.setBackground(buttonColor);
+				}
+			});
+
 			button.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -272,38 +434,45 @@ public class LeaveRequestListPage extends JFrame {
 
 							// Check what page to go to
 							switch (page) {
-							case "FullEmployeeDetailsPage":
-								// Go to the employees information page
-								new FullEmployeeDetailsPage(employeeGI, employeeComp).setVisible(true);
-								break;
-							case "UpdateEmployeeDetailsPage":
-								// Go to the employees information page
-								new UpdateEmployeeDetailsPage(employeeGI, employeeComp).setVisible(true);
-								break;
-							case "LeaveRequestDetailsPage":
-								// Go to the employees information page
-								new LeaveRequestDetailsPage(employeeGI, employeeComp, leaveRequest).setVisible(true);
-								break;
-							case "DeleteDialogPane":
-								// Display a confirmation dialog
-								int result = JOptionPane.showConfirmDialog(null, "Do you want to proceed?",
-										"Confirmation", JOptionPane.YES_NO_OPTION);
+								case "FullEmployeeDetailsPage":
+									// Go to the employees information page
+									new FullEmployeeDetailsPage(employeeGI, employeeComp).setVisible(true);
+									break;
+								case "UpdateEmployeeDetailsPage":
+									// Go to the employees information page
+									new UpdateEmployeeDetailsPage(employeeGI, employeeComp).setVisible(true);
+									break;
+								case "LeaveRequestDetailsPage":
+									// Go to the employees information page
+									new LeaveRequestDetailsPage(employeeGI, employeeComp, leaveRequest).setVisible(true);
+									break;
+								case "DeleteDialogPane":
+									// Display a confirmation dialog with styled components
+									JPanel panel = new JPanel();
+									panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+									panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-								// Check the user's choice
-								if (result == JOptionPane.YES_OPTION) {
-									try {
-										performDeleteOperation(targetColumn);
-										dispose();
-										navigateToLeaveRequestListPage();
-									} catch (IOException | ParseException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
+									JLabel msgLabel = new JLabel("Are you sure you want to delete this leave request?");
+									msgLabel.setFont(BODY_FONT);
+									panel.add(msgLabel);
+
+									int result = JOptionPane.showConfirmDialog(null, panel,
+											"Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+									// Check the user's choice
+									if (result == JOptionPane.YES_OPTION) {
+										try {
+											performDeleteOperation(targetColumn);
+											dispose();
+											navigateToLeaveRequestListPage();
+										} catch (IOException | ParseException e) {
+											e.printStackTrace();
+										}
 									}
-								}
-								break;
-							default:
-								new FullEmployeeDetailsPage(employeeGI, employeeComp).setVisible(true);
-								break;
+									break;
+								default:
+									new FullEmployeeDetailsPage(employeeGI, employeeComp).setVisible(true);
+									break;
 							}
 
 						}
@@ -314,7 +483,7 @@ public class LeaveRequestListPage extends JFrame {
 
 		@Override
 		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
-				int column) {
+													 int column) {
 
 			// Call constructor
 			employeeGI = new GovernmentIdentification(jTable1.getValueAt(row, targetColumn).toString());
@@ -328,7 +497,6 @@ public class LeaveRequestListPage extends JFrame {
 				LeaveRequest.setLeaveRequestInformationObject(jTable1.getValueAt(row, targetColumn - 1).toString(),
 						leaveRequest);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -338,31 +506,6 @@ public class LeaveRequestListPage extends JFrame {
 		@Override
 		public Object getCellEditorValue() {
 			return "View";
-		}
-	}
-
-	// Make the column headers bold
-	private static class BoldHeaderRenderer implements TableCellRenderer {
-
-		private final TableCellRenderer defaultRenderer;
-
-		public BoldHeaderRenderer(TableCellRenderer defaultRenderer) {
-			this.defaultRenderer = defaultRenderer;
-		}
-
-		@Override
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-				int row, int column) {
-			Component c = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
-					column);
-
-			if (c instanceof JLabel) {
-				JLabel label = (JLabel) c;
-				Font font = label.getFont();
-				label.setFont(font.deriveFont(font.getStyle() | Font.BOLD));
-			}
-
-			return c;
 		}
 	}
 

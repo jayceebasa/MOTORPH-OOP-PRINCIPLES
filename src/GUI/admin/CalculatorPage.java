@@ -2,10 +2,7 @@ package GUI.admin;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 import com.google.gson.JsonObject;
@@ -15,6 +12,20 @@ import UtilityClasses.JsonFileHandler;
 import UtilityClasses.SalaryCalculator;
 
 public class CalculatorPage extends JFrame {
+
+	// Design Constants
+	private static final Color PRIMARY_COLOR = new Color(25, 118, 210);  // Material blue
+	private static final Color ACCENT_COLOR = new Color(230, 230, 230);  // Light gray
+	private static final Color BACKGROUND_COLOR = new Color(250, 250, 250);  // Nearly white
+	private static final Color TEXT_COLOR = new Color(33, 33, 33);  // Dark gray for text
+	private static final Color BUTTON_TEXT_COLOR = Color.WHITE;
+	private static final Color PANEL_BACKGROUND = Color.WHITE;
+
+	private static final Font HEADER_FONT = new Font("Segoe UI", Font.BOLD, 24);
+	private static final Font LABEL_FONT = new Font("Segoe UI", Font.BOLD, 16);
+	private static final Font FIELD_FONT = new Font("Segoe UI", Font.PLAIN, 16);
+	private static final Font BUTTON_FONT = new Font("Segoe UI", Font.BOLD, 14);
+	private static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 20);
 
 	// Hourly Rate
 	private double hourlyRate;
@@ -110,6 +121,9 @@ public class CalculatorPage extends JFrame {
 	private JLabel totalAllowancesLabel1;
 	private JLabel totalAllowanceValue1;
 
+	// Title
+	private JLabel titleLabel;
+
 	/**
 	 * Creates new form CalculatorPage
 	 */
@@ -138,32 +152,49 @@ public class CalculatorPage extends JFrame {
 		totalAllowanceValue1 = new javax.swing.JLabel();
 		jPanel4 = new javax.swing.JPanel();
 		allowancesLabel = new javax.swing.JLabel();
+		titleLabel = new JLabel("Salary Calculator");
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setBackground(new java.awt.Color(255, 255, 255));
+		setBackground(BACKGROUND_COLOR);
+		getContentPane().setBackground(BACKGROUND_COLOR);
 		setResizable(false);
 		setTitle("MotorPH Payroll System | Salary Calculator");
 
-		jPanel1.setBackground(new java.awt.Color(255, 255, 255));
-		jPanel1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+		// Set up title
+		titleLabel.setFont(TITLE_FONT);
+		titleLabel.setForeground(PRIMARY_COLOR);
 
-		hoursRenderedLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		hoursRenderedLabel.setText("Hours Rendered");
+		// Panel 1 - Gross Salary Computation
+		jPanel1 = createStyledPanel();
 
-		grossSalaryComputationLabel.setFont(new java.awt.Font("Arial", 1, 24)); // NOI18N
+		// Style labels
+		hoursRenderedLabel.setFont(LABEL_FONT);
+		hoursRenderedLabel.setForeground(TEXT_COLOR);
+
+		grossSalaryComputationLabel.setFont(HEADER_FONT);
+		grossSalaryComputationLabel.setForeground(PRIMARY_COLOR);
 		grossSalaryComputationLabel.setText("Gross Salary Computation");
 
-		hourlyRateLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		hourlyRateLabel.setText("Hourly Rate");
+		hourlyRateLabel.setFont(LABEL_FONT);
+		hourlyRateLabel.setForeground(TEXT_COLOR);
 
-		grossSalaryLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		grossSalaryLabel.setText("Gross Salary");
+		grossSalaryLabel.setFont(LABEL_FONT);
+		grossSalaryLabel.setForeground(TEXT_COLOR);
+		grossSalaryLabel.setFont(grossSalaryLabel.getFont().deriveFont(Font.BOLD));
 
-		hourlyRateValue.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		hourlyRateValue.setText(" ");
+		hourlyRateValue.setFont(FIELD_FONT);
+		hourlyRateValue.setForeground(TEXT_COLOR);
 
-		grossSalaryValue.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		grossSalaryValue.setText(" ");
+		grossSalaryValue.setFont(FIELD_FONT);
+		grossSalaryValue.setForeground(TEXT_COLOR);
+		grossSalaryValue.setFont(grossSalaryValue.getFont().deriveFont(Font.BOLD));
+
+		// Style text field
+		hoursRenderedField.setPreferredSize(new Dimension(132, 35));
+		hoursRenderedField.setFont(FIELD_FONT);
+		hoursRenderedField.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(ACCENT_COLOR),
+				BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 
 		hoursRenderedField.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -171,7 +202,26 @@ public class CalculatorPage extends JFrame {
 			}
 		});
 
-		calculateSalaryButton.setText("Calculate");
+		// Style button
+		calculateSalaryButton.setBackground(PRIMARY_COLOR);
+		calculateSalaryButton.setForeground(BUTTON_TEXT_COLOR);
+		calculateSalaryButton.setFont(BUTTON_FONT);
+		calculateSalaryButton.setFocusPainted(false);
+		calculateSalaryButton.setBorderPainted(false);
+		calculateSalaryButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+		calculateSalaryButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				calculateSalaryButton.setBackground(PRIMARY_COLOR.darker());
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				calculateSalaryButton.setBackground(PRIMARY_COLOR);
+			}
+		});
+
 		calculateSalaryButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				calculateSalaryButtonActionPerformed(evt, employeeComp);
@@ -209,7 +259,7 @@ public class CalculatorPage extends JFrame {
 								.addGap(14, 14, 14).addComponent(grossSalaryComputationLabel).addGap(28, 28, 28)
 								.addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
 										.addComponent(hoursRenderedLabel).addComponent(calculateSalaryButton)
-										.addComponent(hoursRenderedField, javax.swing.GroupLayout.PREFERRED_SIZE, 24,
+										.addComponent(hoursRenderedField, javax.swing.GroupLayout.PREFERRED_SIZE, 35,
 												javax.swing.GroupLayout.PREFERRED_SIZE))
 								.addGap(18, 18, 18)
 								.addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -219,71 +269,44 @@ public class CalculatorPage extends JFrame {
 										.addComponent(grossSalaryLabel).addComponent(grossSalaryValue))
 								.addContainerGap(35, Short.MAX_VALUE)));
 
-		jPanel3.setBackground(new java.awt.Color(255, 255, 255));
-		jPanel3.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+		// Panel 3 - Net Salary Computation
+		jPanel3 = createStyledPanel();
 
-		netSalaryComputationLabel.setFont(new java.awt.Font("Arial", 1, 24)); // NOI18N
+		// Style headers and labels
+		netSalaryComputationLabel.setFont(HEADER_FONT);
+		netSalaryComputationLabel.setForeground(PRIMARY_COLOR);
 		netSalaryComputationLabel.setText("Net Salary Computation");
 
-		sssDeductionsLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		sssDeductionsLabel.setText("SSS Deduction");
+		styleCalculatorLabel(sssDeductionsLabel, "SSS Deduction");
+		styleCalculatorLabel(sssDeductionsValue, " ");
+		styleCalculatorLabel(philhealthDeductionsLabel, "PhilHealth Deduction");
+		styleCalculatorLabel(philhealthDeductionsValue, " ");
+		styleCalculatorLabel(totalDeductionsLabel, "Total Deductions");
+		styleCalculatorLabel(totalDeductionsValue, " ");
+		styleCalculatorLabel(pagibigDeductionsLabel, "Pag-ibig Deduction");
+		styleCalculatorLabel(pagibigDeductionsValue, " ");
+		styleCalculatorLabel(grossSalaryLabel1, "Gross Salary");
+		styleCalculatorLabel(grossSalaryValue1, " ");
+		styleCalculatorLabel(taxableSalaryLabel, "Taxable Salary");
+		styleCalculatorLabel(taxableSalaryValue, " ");
+		styleCalculatorLabel(withHoldingTaxLabel, "Withholding Tax");
+		styleCalculatorLabel(withHoldingTaxValue, " ");
+		styleCalculatorLabel(salaryAfterTaxLabel, "Salary After Tax");
+		styleCalculatorLabel(salaryAfterTaxValue, " ");
+		styleCalculatorLabel(totalAllowancesLabel1, "Total Allowances");
+		styleCalculatorLabel(totalAllowanceValue1, " ");
+		styleCalculatorLabel(netSalaryLabel, "Net Salary");
+		styleCalculatorLabel(netSalaryValue, " ");
 
-		sssDeductionsValue.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		sssDeductionsValue.setText(" ");
-
-		philhealthDeductionsLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		philhealthDeductionsLabel.setText("PhilHealth Deduction");
-
-		philhealthDeductionsValue.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		philhealthDeductionsValue.setText(" ");
-
-		totalDeductionsLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		totalDeductionsLabel.setText("Total Deductions");
-
-		totalDeductionsValue.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		totalDeductionsValue.setText(" ");
-
-		pagibigDeductionsLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		pagibigDeductionsLabel.setText("Pag-ibig Deduction");
-
-		pagibigDeductionsValue.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		pagibigDeductionsValue.setText(" ");
-
-		grossSalaryLabel1.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		grossSalaryLabel1.setText("Gross Salary");
-
-		grossSalaryValue1.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		grossSalaryValue1.setText(" ");
-
-		taxableSalaryLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		taxableSalaryLabel.setText("Taxable Salary");
-
-		taxableSalaryValue.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		taxableSalaryValue.setText(" ");
-
-		withHoldingTaxLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		withHoldingTaxLabel.setText("Withholding Tax");
-
-		withHoldingTaxValue.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		withHoldingTaxValue.setText(" ");
-
-		salaryAfterTaxLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		salaryAfterTaxLabel.setText("Salary After Tax");
-
-		salaryAfterTaxValue.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		salaryAfterTaxValue.setText(" ");
-
-		totalAllowancesLabel1.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		totalAllowancesLabel1.setText("Total Allowances");
-
-		totalAllowanceValue1.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		totalAllowanceValue1.setText(" ");
-
-		netSalaryLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		netSalaryLabel.setText("Net Salary");
-
-		netSalaryValue.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		netSalaryValue.setText(" ");
+		// Bold the section headers
+		totalDeductionsLabel.setFont(totalDeductionsLabel.getFont().deriveFont(Font.BOLD));
+		totalDeductionsValue.setFont(totalDeductionsValue.getFont().deriveFont(Font.BOLD));
+		taxableSalaryLabel.setFont(taxableSalaryLabel.getFont().deriveFont(Font.BOLD));
+		taxableSalaryValue.setFont(taxableSalaryValue.getFont().deriveFont(Font.BOLD));
+		salaryAfterTaxLabel.setFont(salaryAfterTaxLabel.getFont().deriveFont(Font.BOLD));
+		salaryAfterTaxValue.setFont(salaryAfterTaxValue.getFont().deriveFont(Font.BOLD));
+		netSalaryLabel.setFont(netSalaryLabel.getFont().deriveFont(Font.BOLD));
+		netSalaryValue.setFont(netSalaryValue.getFont().deriveFont(Font.BOLD));
 
 		javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
 		jPanel3.setLayout(jPanel3Layout);
@@ -363,35 +386,26 @@ public class CalculatorPage extends JFrame {
 								.addComponent(netSalaryLabel).addComponent(netSalaryValue))
 						.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
-		jPanel4.setBackground(new java.awt.Color(255, 255, 255));
-		jPanel4.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+		// Panel 4 - Allowances
+		jPanel4 = createStyledPanel();
 
-		riceSubsidyLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		riceSubsidyLabel.setText("Rice Subsidy");
+		// Style the allowances section
+		styleCalculatorLabel(riceSubsidyLabel, "Rice Subsidy");
+		styleCalculatorLabel(riceSubsidyValue, " ");
+		styleCalculatorLabel(phoneAllowanceLabel, "Phone Allowance");
+		styleCalculatorLabel(phoneAllowanceValue, " ");
+		styleCalculatorLabel(totalAllowanceLabel, "Total Allowances");
+		styleCalculatorLabel(totalAllowanceValue, " ");
+		styleCalculatorLabel(clothingAllowanceLabel, "Clothing Allowance");
+		styleCalculatorLabel(clothingAllowanceValue, " ");
 
-		riceSubsidyValue.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		riceSubsidyValue.setText(" ");
+		// Make total bold
+		totalAllowanceLabel.setFont(totalAllowanceLabel.getFont().deriveFont(Font.BOLD));
+		totalAllowanceValue.setFont(totalAllowanceValue.getFont().deriveFont(Font.BOLD));
 
-		phoneAllowanceLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		phoneAllowanceLabel.setText("Phone Allowance");
-
-		phoneAllowanceValue.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		phoneAllowanceValue.setText(" ");
-
-		totalAllowanceLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		totalAllowanceLabel.setText("Total Allowances");
-
-		totalAllowanceValue.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
-		totalAllowanceValue.setText(" ");
-
-		allowancesLabel.setFont(new java.awt.Font("Arial", 1, 24)); // NOI18N
+		allowancesLabel.setFont(HEADER_FONT);
+		allowancesLabel.setForeground(PRIMARY_COLOR);
 		allowancesLabel.setText("Allowances");
-
-		clothingAllowanceLabel.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		clothingAllowanceLabel.setText("Clothing Allowance");
-
-		clothingAllowanceValue.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
-		clothingAllowanceValue.setText(" ");
 
 		javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
 		jPanel4.setLayout(jPanel4Layout);
@@ -434,6 +448,10 @@ public class CalculatorPage extends JFrame {
 		getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(
 				layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+						.addGroup(layout.createSequentialGroup()
+								.addGap(20, 20, 20)
+								.addComponent(titleLabel)
+								.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 						.addGroup(layout.createSequentialGroup().addGap(48, 48, 48)
 								.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
 										.addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE,
@@ -444,22 +462,51 @@ public class CalculatorPage extends JFrame {
 								.addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE,
 										javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
 								.addContainerGap(58, Short.MAX_VALUE)));
-		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout
-				.createSequentialGroup().addContainerGap(36, Short.MAX_VALUE)
-				.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-						.addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE,
-								javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addGroup(layout.createSequentialGroup()
-								.addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE,
-										javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-								.addGap(18, 18, 18).addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE,
-										javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-				.addContainerGap(36, Short.MAX_VALUE)));
+		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addGroup(layout.createSequentialGroup()
+						.addGap(20, 20, 20)
+						.addComponent(titleLabel)
+						.addGap(10, 10, 10)
+						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+								.addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE,
+										javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE,
+												javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+										.addGap(18, 18, 18).addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE,
+												javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+						.addContainerGap(36, Short.MAX_VALUE)));
 
 		pack();
 
 		// Must be called after setting pack
 		setLocationRelativeTo(null);
+	}
+
+	// Helper method to create styled panels
+	private JPanel createStyledPanel() {
+		JPanel panel = new JPanel() {
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				Graphics2D g2d = (Graphics2D) g;
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2d.setColor(getBackground());
+				g2d.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
+			}
+		};
+		panel.setBackground(PANEL_BACKGROUND);
+		panel.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(ACCENT_COLOR),
+				BorderFactory.createEmptyBorder(15, 15, 15, 15)));
+		return panel;
+	}
+
+	// Helper method to style labels consistently
+	private void styleCalculatorLabel(JLabel label, String text) {
+		label.setText(text);
+		label.setFont(LABEL_FONT);
+		label.setForeground(TEXT_COLOR);
 	}
 
 	private void hoursRenderedFieldActionPerformed(java.awt.event.ActionEvent evt, Compensation employeeComp) {
@@ -469,12 +516,11 @@ public class CalculatorPage extends JFrame {
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		
+
 		setDataOnEvent(employeeComp);
 	}
 
 	private void calculateSalaryButtonActionPerformed(java.awt.event.ActionEvent evt, Compensation employeeComp) {
-
 		// Exit if the value is not of double type
 		if (!isNumeric(hoursRenderedField.getText())) {
 			JOptionPane.showMessageDialog(new JFrame(""), "Please provide a valid input.", "Invalid Input",
@@ -529,7 +575,6 @@ public class CalculatorPage extends JFrame {
 		// Set Net Salary
 		netSalary = Double.parseDouble(numberFormat.format(salaryAfterTax + totalAllowance));
 		netSalaryValue.setText(String.valueOf(netSalary));
-
 	}
 
 	public void setDataOnRender(Compensation employeeComp) {
