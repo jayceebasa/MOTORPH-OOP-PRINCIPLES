@@ -32,6 +32,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 
 import javax.swing.*;
@@ -224,6 +225,36 @@ public class LeaveRequestListPage extends JFrame {
 		});
 	}
 
+	private String convertToValidDateFormat(String inputDate) {
+		try {
+			// Try multiple date formats
+			SimpleDateFormat[] inputFormats = {
+					new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy"),  // Default toString() format
+					new SimpleDateFormat("yyyy-MM-dd"),  // Already correct format
+					new SimpleDateFormat("MM/dd/yyyy"),  // Common US format
+					new SimpleDateFormat("dd-MM-yyyy")   // Another common format
+			};
+
+			for (SimpleDateFormat format : inputFormats) {
+				try {
+					Date parsedDate = format.parse(inputDate);
+					// Convert to YYYY-MM-DD format
+					return new SimpleDateFormat("yyyy-MM-dd").format(parsedDate);
+				} catch (ParseException e) {
+					// Try next format
+					continue;
+				}
+			}
+
+			// If no format works, throw an exception
+			throw new ParseException("Unable to parse date: " + inputDate, 0);
+		} catch (Exception e) {
+			// Log the error or handle it appropriately
+			e.printStackTrace();
+			return null;  // or return a default date
+		}
+	}
+
 	private void loadEmployeeData() throws ParseException {
 		try {
 			// Read the JSON file and parse it using GSON
@@ -261,8 +292,13 @@ public class LeaveRequestListPage extends JFrame {
 				String empNum = jsonObject.has("employeeNum") ? jsonObject.get("employeeNum").getAsString() : "";
 				String lastName = jsonObject.has("lastName") ? jsonObject.get("lastName").getAsString() : "";
 				String firstName = jsonObject.has("firstName") ? jsonObject.get("firstName").getAsString() : "";
-				String startDate = jsonObject.has("startDate") ? jsonObject.get("startDate").getAsString() : "";
-				String endDate = jsonObject.has("endDate") ? jsonObject.get("endDate").getAsString() : "";
+
+				// Convert start and end dates to valid format
+				String startDate = jsonObject.has("startDate") ?
+						convertToValidDateFormat(jsonObject.get("startDate").getAsString()) : "";
+				String endDate = jsonObject.has("endDate") ?
+						convertToValidDateFormat(jsonObject.get("endDate").getAsString()) : "";
+
 				String status = jsonObject.has("approved") ? jsonObject.get("approved").getAsString() : "Pending";
 				String leaveType = "";
 
@@ -294,15 +330,18 @@ public class LeaveRequestListPage extends JFrame {
 					}
 				}
 
-				// Format dates
+				// Format dates for display
 				String formattedStartDate = "";
 				String formattedEndDate = "";
 				try {
-					formattedStartDate = new SimpleDateFormat("EEE MMM dd, yyyy").format(
-							new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(startDate));
+					SimpleDateFormat displayFormat = new SimpleDateFormat("EEE MMM dd, yyyy");
+					SimpleDateFormat parseFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-					formattedEndDate = new SimpleDateFormat("EEE MMM dd, yyyy").format(
-							new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(endDate));
+					formattedStartDate = startDate.isEmpty() ? "" :
+							displayFormat.format(parseFormat.parse(startDate));
+
+					formattedEndDate = endDate.isEmpty() ? "" :
+							displayFormat.format(parseFormat.parse(endDate));
 				} catch (Exception e) {
 					// If date parsing fails, use the original values
 					formattedStartDate = startDate;
@@ -328,8 +367,8 @@ public class LeaveRequestListPage extends JFrame {
 				leaveRequest.setId(id);
 				leaveRequest.setLastName(lastName);
 				leaveRequest.setFirstName(firstName);
-				leaveRequest.setStartDate(startDate);
-				leaveRequest.setEndDate(endDate);
+				leaveRequest.setStartDate(startDate);  // Use the converted YYYY-MM-DD format
+				leaveRequest.setEndDate(endDate);      // Use the converted YYYY-MM-DD format
 				leaveRequest.setApproved(status);
 				leaveRequest.setLeaveType(leaveType);
 				// Store in a map or collection if needed for faster access when viewing details

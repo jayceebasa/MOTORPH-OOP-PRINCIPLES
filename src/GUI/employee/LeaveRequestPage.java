@@ -283,10 +283,15 @@ public class LeaveRequestPage extends JFrame {
 			leaveRequest.setLastName(employeeGI.getLastName());
 			leaveRequest.setFirstName(employeeGI.getFirstName());
 
-			// Convert dates to string representation
-			SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-			leaveRequest.setStartDate(dateFormat.format(startDateField.getDate()));
-			leaveRequest.setEndDate(dateFormat.format(endDateField.getDate()));
+			// Convert dates to YYYY-MM-DD format
+			SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+			SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+			Date startDate = startDateField.getDate();
+			Date endDate = endDateField.getDate();
+
+			leaveRequest.setStartDate(outputFormat.format(startDate));
+			leaveRequest.setEndDate(outputFormat.format(endDate));
 
 			leaveRequest.setNotes(notesField.getText());
 			leaveRequest.setLeaveType(typeOfLeaveDropdown.getSelectedItem().toString());
